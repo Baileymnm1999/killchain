@@ -1,4 +1,5 @@
 # REQUIRED TOOLS
+# Python 3
 # /sys/class/net
 # iwconfig
 # iw
@@ -6,6 +7,21 @@
 #
 #
 #
+# Valid methods###############################################################################################################################################################################
+#
+# get_interfaces() will return a list of all possible wlan network interfaces **May return additional unwanted devices, takes no args
+#
+# killchain.NetworkInterface() will prompt user to selcet from a list of wlan devices and returns an network interfave object of the device they choose, takes no args
+#
+# killchain.NetworkInterface().set_name() will call the function to prompt the user with a list of wlan devices and change relavent network interface to the device they choose, takes no args
+#
+# killchain.NetworkInterface().mode() will return the mode of the network interface or None if mode is not managed, monitor, or master, takes no args
+#
+# killchain.NetworkInterface().is_mode_supported("mode_to_check") will return True, False, or "Inconclusive" dependant on weather a mode is supported by device, takes string arg ##UNSTABLE##
+#
+# killchain.NetworkInterface().set_mode("mode") will attempt to set the mode to given mode, takes string args
+#
+
 
 import os, time, subprocess
 
@@ -35,7 +51,7 @@ class NetworkInterface():
         print("Which device would you like to use? (Program will fail if device does not support monitor mode)")
 
         # Runs through list of interfaces
-        while isinstance(choice, str) or choice == None or choice > count or choice < 1:
+        while True:
             count = 0
             offset = 0
             print()
@@ -52,6 +68,7 @@ class NetworkInterface():
             # User makes selection
             choice = input("Select device: ")
 
+
             # Input validation
             if choice.isdigit():
 
@@ -61,10 +78,17 @@ class NetworkInterface():
                 else:
                     choice = int(choice)
 
-                if choice > count or choice < 1:
+                if choice >= count or choice < 1:
                     print("Pick a valid card")
-                    
-        return interfaces[choice - 1]
+                else:
+                    return interfaces[choice - 1]
+            elif not choice.isdigit():
+
+                # Checks for string selection
+                if choice in interfaces and not choice == "lo":
+                    return interfaces[interfaces.index(choice)]
+                else:
+                    print("Pick a valid card")
 
 
 
@@ -90,7 +114,7 @@ class NetworkInterface():
             else:
                 pass
 
-    # Attribute to determine of given mode is supoorted
+    # Attribute to determine of given mode is supoorted *********UNSTABLE*********
     def is_mode_supported(self, mode):
 
         # Sets mode to propper case
@@ -181,3 +205,4 @@ class NetworkInterface():
 
             # Notify user of invalid mode
             print(mode + " is an unallowed mode for the device. Aborting")
+            return -1
